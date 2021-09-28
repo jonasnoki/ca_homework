@@ -82,7 +82,7 @@ export class Particle {
     public updateParticle(dt: number) {
         if (!this.fixed) {
             // EulerSemi
-            this.previousPosition = this.currentPosition;
+            this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
             this.velocity = this.velocity.addScaledVector(this.force,dt);
             this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
             //TODO: implement Verlet
@@ -109,12 +109,13 @@ export class Particle {
 
     public correctCollisionParticlePlain(p: Plane) {
         // TODO: check the following calculation especially what p.d refers to???:
+        const normalizedNormal: Vector3 = p.normal.normalize()
         // the original implementation is like this: 	float d = -glm::dot(point, normal);
         // implementation of threejs confirms that it is the same: 		this.constant = - point.dot( this.normal );
         // m_currentPosition = m_currentPosition - (1 + m_bouncing) * (glm::dot(m_currentPosition, p.normal) + p.d) * p.normal;
-        this.currentPosition = this.currentPosition.sub((p.normal as Vector3).multiplyScalar(((1 + this.bouncing) * (this.currentPosition.dot(p.normal) + p.constant)))) ;
+        this.currentPosition = this.currentPosition.sub(normalizedNormal.multiplyScalar(((1 + this.bouncing) * (this.currentPosition.dot(normalizedNormal) + p.constant)))) ;
         // m_velocity = m_velocity - (1 + m_bouncing) * (glm::dot(m_velocity, p.normal) + p.d) * p.normal;
-        this.velocity = this.velocity.sub((p.normal as Vector3).multiplyScalar(((1 + this.bouncing) * (this.velocity.dot(p.normal) + p.constant)))) ;
+        this.velocity = this.velocity.sub(normalizedNormal.multiplyScalar(((1 + this.bouncing) * (this.velocity.dot(normalizedNormal) + p.constant)))) ;
     }
 
 }
