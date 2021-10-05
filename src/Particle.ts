@@ -6,13 +6,13 @@ export class Particle {
     private velocity: Vector3 = new Vector3();
     private force: Vector3 = new Vector3();
 
-    private bouncing: number = 0;
+    private bouncing: number = 1;
     private lifetime: number = 0;
     private fixed: boolean = false;
 
     public mesh: Mesh;
 
-    constructor(x: number, y: number, z: number, geometry = new SphereGeometry(1),material = new MeshNormalMaterial(), ) {
+    constructor(x: number, y: number, z: number, geometry = new SphereGeometry(0.3),material = new MeshNormalMaterial(), ) {
         this.currentPosition.set(x, y, z);
         this.mesh = new Mesh(geometry, material);
     }
@@ -61,6 +61,11 @@ export class Particle {
     };
 
 
+    public delete() {
+        this.mesh.parent?.remove(this.mesh);
+    }
+
+
     public getBouncing(): number {
         return this.bouncing
     };
@@ -80,6 +85,7 @@ export class Particle {
 
     public updateParticle(dt: number) {
         if (!this.fixed) {
+            this.lifetime -= dt;
             // EulerSemi
             this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
             this.velocity = this.velocity.addScaledVector(this.force,dt);
@@ -118,6 +124,7 @@ export class Particle {
     }
 
     public logInfo(){
+        console.log(`lifetime: ${this.lifetime}`);
         console.log(`position = ${this.currentPosition.x} ${this.currentPosition.y} ${this.currentPosition.z} velocity = ${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`)
     }
 

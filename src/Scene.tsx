@@ -1,6 +1,8 @@
 import React from 'react';
 import * as THREE from "three";
 import {Simulation} from "./Simulation";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+
 
 function Scene() {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -21,17 +23,24 @@ function Scene() {
         const light = new THREE.AmbientLight(0x404040); // soft white light
         scene.add(light);
 
-        const simulation = new Simulation();
+
+
+        const simulation = new Simulation(scene);
 
         simulation.particles.forEach(particle => scene.add(particle.mesh))
 
         const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvasRef.current as HTMLCanvasElement});
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setAnimationLoop((time) => animation(time, camera, scene, renderer, simulation));
+        const controls = new OrbitControls( camera, renderer.domElement );
+
+        controls.update();
+
+        renderer.setAnimationLoop((time) => animation(time, camera, scene, renderer, simulation, controls));
     }
 
-    function animation(time: number, camera: THREE.Camera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, simulation: Simulation) {
+    function animation(time: number, camera: THREE.Camera, scene: THREE.Scene, renderer: THREE.WebGLRenderer, simulation: Simulation, controls: OrbitControls) {
         simulation.update(time);
+        controls.update();
         renderer.render(scene, camera);
 
     }
