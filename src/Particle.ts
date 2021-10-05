@@ -52,7 +52,6 @@ export class Particle {
         return this.currentPosition
     };
 
-
     public getPreviousPosition(): Vector3 {
         return this.previousPosition
     };
@@ -116,6 +115,10 @@ export class Particle {
         this.currentPosition = this.currentPosition.sub(normalizedNormal.multiplyScalar(((1 + this.bouncing) * (this.currentPosition.dot(normalizedNormal) + p.constant)))) ;
         // m_velocity = m_velocity - (1 + m_bouncing) * (glm::dot(m_velocity, p.normal) + p.d) * p.normal;
         this.velocity = this.velocity.sub(normalizedNormal.multiplyScalar(((1 + this.bouncing) * (this.velocity.dot(normalizedNormal) + p.constant)))) ;
+    }
+
+    public logInfo(){
+        console.log(`position = ${this.currentPosition.x} ${this.currentPosition.y} ${this.currentPosition.z} velocity = ${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`)
     }
 
 }

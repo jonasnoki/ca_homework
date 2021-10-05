@@ -22,9 +22,7 @@ export class Simulation {
         this.plane = new Plane();
         this.plane.setFromNormalAndCoplanarPoint(new Vector3(0, 1, 0), new Vector3(0, 0, 0));
 
-
-        const currentPosition = p.getCurrentPosition();
-        console.log(`position = ${currentPosition.x}  ${currentPosition.y}  ${currentPosition.z}  time =  0`)
+        p.logInfo()
     }
 
     update(t: number){
@@ -33,7 +31,7 @@ export class Simulation {
             const currentPosition = p.getCurrentPosition();
             // call solver types: EulerOrig, EulerSemi and Verlet(to be implemented)
             p.updateParticle(DT);
-            console.log(`position = ${currentPosition.x}  ${currentPosition.y}  ${currentPosition.z}  time =  ${t}`)
+            p.logInfo();
             //Check Floor collisions
             if (p.collisionParticlePlane(this.plane)){
                 p.correctCollisionParticlePlain(this.plane);
