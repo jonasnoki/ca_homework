@@ -19,23 +19,16 @@ export class Simulation {
             this.spawnRandomParticle("explosion");
         }
 
-        const bottomPlane = new Plane();
-        bottomPlane.setFromNormalAndCoplanarPoint(new Vector3(0, 1, 0), new Vector3(0, 0, 0));
-        const topPlane = new Plane()
-        topPlane.setFromNormalAndCoplanarPoint(new Vector3(0, -1, 0), new Vector3(0, 20, 0))
-        const frontPlane = new Plane()
-        frontPlane.setFromNormalAndCoplanarPoint(new Vector3(0, 0, -1), new Vector3(0, 0, 10))
-        const backPlane = new Plane()
-        backPlane.setFromNormalAndCoplanarPoint(new Vector3(0, 0, 1), new Vector3(0, 0, -10))
-        const rightPlane = new Plane()
-        rightPlane.setFromNormalAndCoplanarPoint(new Vector3(1, 0, 0), new Vector3(-10, 0, 0))
-        const leftPlane = new Plane()
-        leftPlane.setFromNormalAndCoplanarPoint(new Vector3(-1, 0, 0), new Vector3(10, 0, 0))
-
+        const bottomPlane = new Plane(new Vector3(0, 1, 0), 0);
+        const topPlane = new Plane(new Vector3(0, -1, 0), 20);
+        const frontPlane = new Plane(new Vector3(0, 0, -1), 10);
+        const backPlane = new Plane(new Vector3(0, 0, 1), 10);
+        const rightPlane = new Plane(new Vector3(1, 0, 0), 10);
+        const leftPlane = new Plane(new Vector3(-1, 0, 0), 10);
         this.planes.push(bottomPlane, topPlane, frontPlane, backPlane, rightPlane, leftPlane)
 
         this.planes.forEach((plane )=> {
-            const helper = new PlaneHelper( plane, 1, 0xffff00 );
+            const helper = new PlaneHelper( plane, 10, 0xffff00 );
             scene.add( helper );
         })
 
