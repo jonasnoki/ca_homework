@@ -1,8 +1,10 @@
-import {Vector3, Plane, Scene, PlaneHelper} from "three";
+import {Vector3, Plane, Scene, PlaneHelper, Sphere, SphereGeometry, MeshNormalMaterial, Mesh} from "three";
 import {Particle} from "./Particle";
 
 
 const DT = 0.01;
+const SPHERE_RADIUS = 2;
+const SPHERE_POSITION = new Vector3(0,3,0);
 
 export class Simulation {
     public particles: Particle[] = []
@@ -11,12 +13,14 @@ export class Simulation {
     public scene: Scene;
     private params = {spawnMethod: "explosion", arePlanesVisible: true};
     private planeHelpers: PlaneHelper[] = [];
-
-
+    private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
+    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS), new MeshNormalMaterial());
 
     constructor(scene : Scene, gui: any) {
         // One particle
         this.scene = scene
+        this.sphereMesh.position.set(SPHERE_POSITION.x, SPHERE_POSITION.y,SPHERE_POSITION.z);
+        this.scene.add(this.sphereMesh);
         this.createGui(gui);
         this.createPlanes();
         this.reset()
@@ -64,7 +68,7 @@ export class Simulation {
 
     update(t: number){
         this.removeDeadParticles();
-        
+
         if(!this.isMethodAtBeginning() && Math.floor(t) % 100 < 50){
             this.spawnRandomParticle(this.params.spawnMethod);
         }
@@ -82,7 +86,9 @@ export class Simulation {
                 console.log("rebound = " + this.collisionCount++);
                 }
             }
-            
+            if(p.colllisionParticleSphere(this.sphere)){
+                p.correctCollisionParticleSphere(this.sphere);
+            }
         })
 
     }

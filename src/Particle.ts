@@ -1,4 +1,4 @@
-import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial} from "three";
+import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere} from "three";
 
 export class Particle {
     private currentPosition: Vector3 = new Vector3();
@@ -128,4 +128,15 @@ export class Particle {
         console.log(`position = ${this.currentPosition.x} ${this.currentPosition.y} ${this.currentPosition.z} velocity = ${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`)
     }
 
+    colllisionParticleSphere(sphere: Sphere) {
+        return this.currentPosition.distanceTo(sphere.center) < sphere.radius;
+    }
+
+    correctCollisionParticleSphere(sphere: Sphere) {
+        const direction = this.currentPosition.clone().sub(sphere.center).normalize();
+        const pointOnSphere = sphere.center.clone().addScaledVector(direction, sphere.radius);
+        const plane = new Plane();
+        plane.setFromNormalAndCoplanarPoint(direction, pointOnSphere);
+        this.correctCollisionParticlePlain(plane);
+    }
 }
