@@ -83,16 +83,32 @@ export class Particle {
         this.force.add(force);
     }
 
-    public updateParticle(dt: number) {
+    public updateParticle(dt: number, method : string) {
         if (!this.fixed) {
             this.lifetime -= dt;
-            // EulerSemi
-            this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
-            this.velocity = this.velocity.addScaledVector(this.force,dt);
-            this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
-            //TODO: implement Verlet
-
-
+            switch(method){
+                case "euler-semi":{
+                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.velocity = this.velocity.addScaledVector(this.force,dt);
+                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
+                    }
+                    break;
+                case "euler-orig":{
+                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
+                    this.velocity = this.velocity.addScaledVector(this.force,dt);
+                }
+                break;
+                case "verlet":{
+                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.velocity = this.velocity.addScaledVector(this.force,dt);
+                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
+                }
+                break;
+            default:
+                break;
+            }
+            
             this.mesh.position.set(this.currentPosition.x, this.currentPosition.y, this.currentPosition.z);
         }
 

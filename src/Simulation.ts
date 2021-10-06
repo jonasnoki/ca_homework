@@ -3,7 +3,7 @@ import {Particle} from "./Particle";
 
 
 const DT = 0.01;
-const SPHERE_RADIUS = 2;
+const SPHERE_RADIUS = 3;
 const PARTICLE_RADIUS = 0.3;
 const SPHERE_POSITION = new Vector3(0,3,0);
 
@@ -12,7 +12,7 @@ export class Simulation {
     public planes: Plane[] = [];
     public collisionCount = 0;
     public scene: Scene;
-    private params = {spawnMethod: "explosion", arePlanesVisible: true};
+    private params = {spawnMethod: "explosion", arePlanesVisible: true, solverMethod: "euler-semi"};
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
     private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS-PARTICLE_RADIUS), new MeshNormalMaterial());
@@ -30,6 +30,7 @@ export class Simulation {
 
     private createGui(gui: any) {
         gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain']).onChange( () => this.reset() );
+        gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet']).onChange( () => this.reset() );
         gui.add(this.params, 'arePlanesVisible').onChange(()=>this.togglePlaneHelperVisibility());
     }
 
@@ -78,7 +79,7 @@ export class Simulation {
 
             const currentPosition = p.getCurrentPosition();
             // call solver types: EulerOrig, EulerSemi and Verlet(to be implemented)
-            p.updateParticle(DT);
+            p.updateParticle(DT, this.params.solverMethod);
             p.logInfo();
             //Check Floor collisions
             for(const plane of this.planes){
@@ -105,8 +106,7 @@ export class Simulation {
             case "fountain":
                 p.setVelocity(5 * (Math.random() - 0.5), 10, 5 * (Math.random() - 0.5));
                 break;
-            case "semi-sphere":
-                {
+            case "semi-sphere":{
                     const alpha = 360 * (Math.random() - 0.5)
                     const beta = 90 * Math.random()
                     const position = new Vector3(Math.cos(alpha)*Math.cos(beta), Math.sin(beta), Math.cos(beta) * Math.sin(alpha))
@@ -118,8 +118,8 @@ export class Simulation {
                 const beta = 180 * (Math.random() - 0.5)
                 const position = new Vector3(Math.cos(alpha)*Math.cos(beta), Math.sin(beta), Math.cos(beta) * Math.sin(alpha))
                 p.setVelocity(10 * position.x, 10 * position.y, 10 * position.z)
-            }
-            break;
+                }
+                break;
             default:
                 break;
         }
