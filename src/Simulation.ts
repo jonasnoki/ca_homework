@@ -4,6 +4,7 @@ import {Particle} from "./Particle";
 
 const DT = 0.01;
 const SPHERE_RADIUS = 2;
+const PARTICLE_RADIUS = 0.3;
 const SPHERE_POSITION = new Vector3(0,3,0);
 
 export class Simulation {
@@ -14,7 +15,7 @@ export class Simulation {
     private params = {spawnMethod: "explosion", arePlanesVisible: true};
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
-    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS), new MeshNormalMaterial());
+    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS-PARTICLE_RADIUS), new MeshNormalMaterial());
 
     constructor(scene : Scene, gui: any) {
         // One particle
