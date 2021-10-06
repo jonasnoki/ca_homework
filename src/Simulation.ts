@@ -1,6 +1,6 @@
 import {Vector3, Plane, Scene, PlaneHelper} from "three";
-import { isThisTypeNode } from "typescript";
 import {Particle} from "./Particle";
+
 
 const DT = 0.01;
 
@@ -8,17 +8,27 @@ export class Simulation {
     public particles: Particle[] = []
     public planes: Plane[] = [];
     public collisionCount = 0;
-    public scene;
+    public scene: Scene;
+    private params = {spawnMethod: "explosion", arePlanesVisible: true};
+    private planeHelpers: PlaneHelper[] = [];
 
 
-    constructor(scene : Scene) {
+
+    constructor(scene : Scene, gui: any) {
         // One particle
         this.scene = scene
+        this.createGui(gui);
+        this.createPlanes();
+        this.reset()
 
-        for(let i = 0; i < 500; i++){
-            this.spawnRandomParticle("explosion");
-        }
+    }
 
+    private createGui(gui: any) {
+        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain']).onChange( () => this.reset() );
+        gui.add(this.params, 'arePlanesVisible').onChange(()=>this.togglePlaneHelperVisibility());
+    }
+
+    createPlanes(){
         const bottomPlane = new Plane(new Vector3(0, 1, 0), 0);
         const topPlane = new Plane(new Vector3(0, -1, 0), 20);
         const frontPlane = new Plane(new Vector3(0, 0, -1), 10);
@@ -27,20 +37,37 @@ export class Simulation {
         const leftPlane = new Plane(new Vector3(-1, 0, 0), 10);
         this.planes.push(bottomPlane, topPlane, frontPlane, backPlane, rightPlane, leftPlane)
 
-        this.planes.forEach((plane )=> {
+        this.planeHelpers = this.planes.map((plane )=> {
             const helper = new PlaneHelper( plane, 10, 0xffff00 );
-            scene.add( helper );
+            this.scene.add( helper );
+            return helper;
         })
+    }
 
+    togglePlaneHelperVisibility(){
+        this.planeHelpers.forEach(p => p.visible = !p.visible)
+    }
+
+    reset(){
+        this.particles.forEach(p=> {p.delete()});
+        this.particles = [];
+        if(this.isMethodAtBeginning()) {
+            for(let i = 0; i < 500; i++){
+                this.spawnRandomParticle(this.params.spawnMethod);
+            }
+        }
+    }
+
+    isMethodAtBeginning(){
+        return this.params.spawnMethod === "semi-sphere" ||this.params.spawnMethod === "explosion"
     }
 
     update(t: number){
-        console.log(t)
         this.removeDeadParticles();
         
-        // if(t < 5000){
-        //     this.spawnRandomParticle("explosion");
-        // }
+        if(!this.isMethodAtBeginning() && Math.floor(t) % 100 < 50){
+            this.spawnRandomParticle(this.params.spawnMethod);
+        }
 
         this.particles.forEach((p, index) => {
 

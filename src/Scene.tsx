@@ -12,7 +12,7 @@ function Scene() {
 
     React.useEffect(() => {
         init();
-    }, [context]);
+    }, []);
 
 
     function init() {
@@ -25,9 +25,9 @@ function Scene() {
         const light = new THREE.AmbientLight(0x404040); // soft white light
         scene.add(light);
 
+        const gui = new GUI();
 
-
-        const simulation = new Simulation(scene);
+        const simulation = new Simulation(scene, gui);
 
         simulation.particles.forEach(particle => scene.add(particle.mesh))
 
@@ -44,10 +44,6 @@ function Scene() {
         simulation.update(time);
         controls.update();
         renderer.render(scene, camera);
-
-    }
-
-    function createGUI(){
 
     }
 
