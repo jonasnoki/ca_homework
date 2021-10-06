@@ -2,6 +2,8 @@ import React from 'react';
 import * as THREE from "three";
 import {Simulation} from "./Simulation";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+// @ts-ignore
+import {GUI} from "three/examples/jsm/libs/dat.gui.module";
 
 
 function Scene() {
@@ -42,6 +44,10 @@ function Scene() {
         simulation.update(time);
         controls.update();
         renderer.render(scene, camera);
+
+    }
+
+    function createGUI(){
 
     }
 
