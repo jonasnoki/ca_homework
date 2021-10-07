@@ -22,8 +22,10 @@ export class Particle {
     private vector1 = new Vector3();
 
 
-    constructor(x: number, y: number, z: number) {
+    constructor(x: number, y: number, z: number, bouncing: number, lifetime: number) {
         this.currentPosition.set(x, y, z);
+        this.bouncing = bouncing;
+        this.lifetime = lifetime;
         this.mesh = new Mesh(GEOMETRY, MATERIAL);
     }
 

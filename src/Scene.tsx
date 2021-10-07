@@ -25,7 +25,7 @@ function Scene() {
         const light = new THREE.AmbientLight(0x404040); // soft white light
         scene.add(light);
 
-        const gui = new GUI();
+        const gui = new GUI( { width: 400 } );
 
         const simulation = new Simulation(scene, gui);
 
@@ -42,7 +42,6 @@ function Scene() {
         simulation.update(time);
         controls.update();
         renderer.render(scene, camera);
-
     }
 
     return (

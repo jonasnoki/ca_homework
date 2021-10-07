@@ -8,15 +8,22 @@ const PARTICLE_RADIUS = 0.3;
 const SPHERE_POSITION = new Vector3(0, 3, 0);
 
 export class Simulation {
+    private params = {
+        removeAllParticles: () => {
+            this.removeAllParticles()
+        },
+        spawnMethod: "explosion",
+        arePlanesVisible: true,
+        solverMethod: "euler-semi",
+        bouncing: 1,
+        lifetime: 7,
+    };
+
     public particles: Particle[] = []
     public planes: Plane[] = [];
     public collisionCount = 0;
     public scene: Scene;
-    private params = {
-        removeAllParticles: () => {
-            this.removeAllParticles()
-        }, spawnMethod: "explosion", arePlanesVisible: true, solverMethod: "euler-semi"
-    };
+
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
     private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshNormalMaterial());
@@ -38,6 +45,12 @@ export class Simulation {
             .onChange(() => this.spawnParticles())
             .name('Spawn Method');
         gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet']).name('Solver Method');
+        gui.add(this.params, 'bouncing', 0, 1)
+            .name('Bouncing')
+            .onChange((b: number) => this.particles.forEach(p => p.setBouncing(b)));
+        gui.add(this.params, 'lifetime', 0, 100)
+            .name('Lifetime')
+            .onChange((b: number) => this.particles.forEach(p => p.setLifetime(b)));
         gui.add(this.params, 'arePlanesVisible')
             .name('Show Planes')
             .onChange(() => this.togglePlaneHelperVisibility());
@@ -108,9 +121,8 @@ export class Simulation {
     }
 
     private spawnRandomParticle(method: string) {
-        const p = new Particle(0.0, 10.0, 0.0);
+        const p = new Particle(0.0, 10.0, 0.0, this.params.bouncing, this.params.lifetime);
         this.particles.push(p);
-        p.setLifetime(7.0);
         switch (method) {
             case "waterfall":
                 p.setVelocity(5 * (Math.random() - 0.5), 0, 5 * (Math.random() - 0.5));
@@ -135,7 +147,6 @@ export class Simulation {
             default:
                 break;
         }
-        p.setBouncing(0.8);
         p.addForce(new Vector3(0, -9.8, 0));
         this.scene.add(p.getMesh());
     }
