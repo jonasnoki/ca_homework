@@ -88,19 +88,19 @@ export class Particle {
             this.lifetime -= dt;
             switch(method){
                 case "euler-semi":{
-                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.previousPosition.copy(this.currentPosition);
                     this.velocity = this.velocity.addScaledVector(this.force,dt);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
                     }
                     break;
                 case "euler-orig":{
-                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.previousPosition.copy(this.currentPosition);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
                     this.velocity = this.velocity.addScaledVector(this.force,dt);
                 }
                 break;
                 case "verlet":{
-                    this.previousPosition.set(this.currentPosition.x,this.currentPosition.y,this.currentPosition.z);
+                    this.previousPosition.copy(this.currentPosition);
                     this.velocity = this.velocity.addScaledVector(this.force,dt);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
                 }
@@ -109,7 +109,7 @@ export class Particle {
                 break;
             }
             
-            this.mesh.position.set(this.currentPosition.x, this.currentPosition.y, this.currentPosition.z);
+            this.mesh.position.copy(this.currentPosition);
         }
 
         return;
