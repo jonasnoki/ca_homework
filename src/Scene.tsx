@@ -8,10 +8,10 @@ import {GUI} from "three/examples/jsm/libs/dat.gui.module";
 
 function Scene() {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
-    const [context, setContext] = React.useState<CanvasRenderingContext2D | null>(null);
 
     React.useEffect(() => {
         init();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -29,11 +29,9 @@ function Scene() {
 
         const simulation = new Simulation(scene, gui);
 
-        simulation.particles.forEach(particle => scene.add(particle.mesh))
-
         const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvasRef.current as HTMLCanvasElement});
         renderer.setSize(window.innerWidth, window.innerHeight);
-        const controls = new OrbitControls( camera, renderer.domElement );
+        const controls = new OrbitControls(camera, renderer.domElement);
 
         controls.update();
 
@@ -51,7 +49,7 @@ function Scene() {
         <canvas
             id="canvas"
             ref={canvasRef}
-        ></canvas>
+        />
     );
 }
 

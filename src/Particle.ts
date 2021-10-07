@@ -1,4 +1,9 @@
-import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere} from "three";
+import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere, Material} from "three";
+
+const GEOMETRY = new SphereGeometry(0.3);
+const MATERIAL = new MeshNormalMaterial();
+const VERLET_CONSTANT = 0.99;
+
 
 export class Particle {
     private currentPosition: Vector3 = new Vector3();
@@ -9,12 +14,17 @@ export class Particle {
     private bouncing: number = 1;
     private lifetime: number = 0;
     private fixed: boolean = false;
+    private firstRound = true;
 
-    public mesh: Mesh;
+    private mesh: Mesh;
 
-    constructor(x: number, y: number, z: number, geometry = new SphereGeometry(0.3),material = new MeshNormalMaterial(), ) {
+    // vector to save intermediate calculations
+    private vector1 = new Vector3();
+
+
+    constructor(x: number, y: number, z: number) {
         this.currentPosition.set(x, y, z);
-        this.mesh = new Mesh(geometry, material);
+        this.mesh = new Mesh(GEOMETRY, MATERIAL);
     }
 
     // setters
@@ -60,8 +70,16 @@ export class Particle {
         return this.velocity
     };
 
+    public getMesh(): Mesh {
+        return this.mesh
+    };
+
 
     public delete() {
+        this.mesh.geometry.dispose();
+        if (this.mesh.material instanceof Material) {
+            this.mesh.material.dispose();
+        }
         this.mesh.parent?.remove(this.mesh);
     }
 
@@ -83,35 +101,42 @@ export class Particle {
         this.force.add(force);
     }
 
-    public updateParticle(dt: number, method : string) {
+    public updateParticle(dt: number, method: string) {
         if (!this.fixed) {
             this.lifetime -= dt;
-            switch(method){
-                case "euler-semi":{
+            switch (method) {
+                case "euler-semi":
                     this.previousPosition.copy(this.currentPosition);
-                    this.velocity = this.velocity.addScaledVector(this.force,dt);
+                    this.velocity = this.velocity.addScaledVector(this.force, dt);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
-                    }
+
                     break;
-                case "euler-orig":{
+                case "euler-orig":
                     this.previousPosition.copy(this.currentPosition);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
-                    this.velocity = this.velocity.addScaledVector(this.force,dt);
-                }
-                break;
-                case "verlet":{
+                    this.velocity = this.velocity.addScaledVector(this.force, dt);
+
+                    break;
+                case "verlet":
+                    if (this.firstRound) {
+                        this.previousPosition.subVectors(this.currentPosition, this.velocity.multiplyScalar(dt))
+                        break;
+                    }
+                    // vector1 is previous to current and is just used for performance
+                    this.vector1.subVectors(this.currentPosition, this.previousPosition);
                     this.previousPosition.copy(this.currentPosition);
-                    this.velocity = this.velocity.addScaledVector(this.force,dt);
-                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
-                }
-                break;
-            default:
-                break;
+                    this.currentPosition.addScaledVector(this.vector1, VERLET_CONSTANT).addScaledVector(this.force, dt * dt)
+                    this.velocity.subVectors(this.currentPosition, this.previousPosition).multiplyScalar(1 / dt);
+
+                    break;
+                default:
+                    break;
             }
-            
+
             this.mesh.position.copy(this.currentPosition);
         }
 
+        this.firstRound = false;
         return;
     }
 
@@ -134,12 +159,12 @@ export class Particle {
         // the original implementation is like this: 	float d = -glm::dot(point, normal);
         // implementation of threejs confirms that it is the same: 		this.constant = - point.dot( this.normal );
         // m_currentPosition = m_currentPosition - (1 + m_bouncing) * (glm::dot(m_currentPosition, p.normal) + p.d) * p.normal;
-        this.currentPosition = this.currentPosition.sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.currentPosition.clone().dot(normalizedNormal) + p.constant)))) ;
+        this.currentPosition = this.currentPosition.sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.currentPosition.clone().dot(normalizedNormal) + p.constant))));
         // m_velocity = m_velocity - (1 + m_bouncing) * (glm::dot(m_velocity, p.normal) + p.d) * p.normal;
-        this.velocity = this.velocity.clone().sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.velocity.clone().dot(normalizedNormal))))) ;
+        this.velocity = this.velocity.clone().sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.velocity.clone().dot(normalizedNormal)))));
     }
 
-    public logInfo(){
+    public logInfo() {
         console.log(`lifetime: ${this.lifetime}`);
         console.log(`position = ${this.currentPosition.x} ${this.currentPosition.y} ${this.currentPosition.z} velocity = ${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`)
     }
