@@ -13,8 +13,8 @@ export class Simulation {
     public collisionCount = 0;
     public scene: Scene;
     private params = {
-        reset: () => {
-            this.reset()
+        removeAllParticles: () => {
+            this.removeAllParticles()
         }, spawnMethod: "explosion", arePlanesVisible: true, solverMethod: "euler-semi"
     };
     private planeHelpers: PlaneHelper[] = [];
@@ -28,16 +28,19 @@ export class Simulation {
         this.scene.add(this.sphereMesh);
         this.createGui(gui);
         this.createPlanes();
-        this.reset()
         this.spawnParticles()
 
     }
 
     private createGui(gui: any) {
-        gui.add(this.params, 'reset');
-        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain']).onChange(() => this.spawnParticles());
-        gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet'])//.onChange( () => this.reset() );
-        gui.add(this.params, 'arePlanesVisible').onChange(() => this.togglePlaneHelperVisibility());
+        gui.add(this.params, 'removeAllParticles').name('Remove Particles');
+        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain'])
+            .onChange(() => this.spawnParticles())
+            .name('Spawn Method');
+        gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet']).name('Solver Method');
+        gui.add(this.params, 'arePlanesVisible')
+            .name('Show Planes')
+            .onChange(() => this.togglePlaneHelperVisibility());
     }
 
     createPlanes() {
@@ -68,7 +71,7 @@ export class Simulation {
         }
     }
 
-    reset() {
+    removeAllParticles() {
         this.particles.forEach(p => {
             p.delete()
         });
