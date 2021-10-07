@@ -25,6 +25,11 @@ function Scene() {
         const light = new THREE.AmbientLight(0x404040); // soft white light
         scene.add(light);
 
+        const light2 = new THREE.DirectionalLight(0x404040, 1); // soft white light
+        scene.add(light2);
+
+
+
         const gui = new GUI( { width: 400 } );
 
         const simulation = new Simulation(scene, gui);

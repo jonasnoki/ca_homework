@@ -1,4 +1,13 @@
-import {Vector3, Plane, Scene, PlaneHelper, Sphere, SphereGeometry, MeshNormalMaterial, Mesh} from "three";
+import {
+    Vector3,
+    Plane,
+    Scene,
+    PlaneHelper,
+    Sphere,
+    SphereGeometry,
+    Mesh,
+    MeshPhongMaterial
+} from "three";
 import {Particle} from "./Particle";
 
 
@@ -26,11 +35,12 @@ export class Simulation {
 
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
-    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshNormalMaterial());
+    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshPhongMaterial());
 
     constructor(scene: Scene, gui: any) {
         // One particle
         this.scene = scene
+        this.sphereMesh.material.color.setHSL(.96, 1, .5)
         this.sphereMesh.position.set(SPHERE_POSITION.x, SPHERE_POSITION.y, SPHERE_POSITION.z);
         this.scene.add(this.sphereMesh);
         this.createGui(gui);
