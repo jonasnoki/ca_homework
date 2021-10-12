@@ -172,8 +172,6 @@ export class Simulation {
                 p.setVelocity(10 * position.x, 10 * position.y, 10 * position.z)
             }
                 break;
-            default:
-                break;
         }
         p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z);
         this.scene.add(p.getMesh());
