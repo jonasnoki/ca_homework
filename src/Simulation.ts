@@ -26,6 +26,11 @@ export class Simulation {
         solverMethod: "euler-semi",
         bouncing: 1,
         lifetime: 7,
+        gravity: {
+            x: 0,
+            y: -9.81,
+            z: 0,
+        }
     };
 
     public particles: Particle[] = []
@@ -64,6 +69,13 @@ export class Simulation {
         gui.add(this.params, 'arePlanesVisible')
             .name('Show Planes')
             .onChange(() => this.togglePlaneHelperVisibility());
+        const gravityFolder: any = gui.addFolder('Gravity');
+        gravityFolder.add(this.params.gravity, 'x', -20, 20)
+            .onChange(() => this.applyGravityToAllParticles());
+        gravityFolder.add(this.params.gravity, 'y', -20, 20)
+            .onChange(() => this.applyGravityToAllParticles());
+        gravityFolder.add(this.params.gravity, 'z', -20, 20)
+            .onChange(() => this.applyGravityToAllParticles());
     }
 
     createPlanes() {
@@ -76,7 +88,9 @@ export class Simulation {
         this.planes.push(bottomPlane, topPlane, frontPlane, backPlane, rightPlane, leftPlane)
 
         this.planeHelpers = this.planes.map((plane) => {
-            const helper = new PlaneHelper(plane, 10, 0xffff00);
+            const visualizedPlane = plane.clone();
+            visualizedPlane.translate(visualizedPlane.normal.clone().normalize().multiplyScalar(- Particle.radius))
+            const helper = new PlaneHelper(visualizedPlane, 10, 0xffff00);
             this.scene.add(helper);
             return helper;
         })
@@ -84,6 +98,12 @@ export class Simulation {
 
     togglePlaneHelperVisibility() {
         this.planeHelpers.forEach(p => p.visible = !p.visible)
+    }
+
+    applyGravityToAllParticles() {
+        this.particles.forEach(p =>
+            p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z)
+        )
     }
 
     spawnParticles() {
@@ -153,7 +173,7 @@ export class Simulation {
             default:
                 break;
         }
-        p.addForce(new Vector3(0, -9.8, 0));
+        p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z);
         this.scene.add(p.getMesh());
     }
 

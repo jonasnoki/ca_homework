@@ -1,8 +1,6 @@
 import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere, Material} from "three";
 
-const GEOMETRY = new SphereGeometry(0.3);
-const MATERIAL = new MeshNormalMaterial();
-const VERLET_CONSTANT = 0.99;
+
 
 
 export class Particle {
@@ -16,7 +14,14 @@ export class Particle {
     private fixed: boolean = false;
     private firstRound = true;
 
+    public static radius = 0.3;
+
     private mesh: Mesh;
+    private geometry = new SphereGeometry(Particle.radius);
+    private material = new MeshNormalMaterial();
+
+    private verletConstant = 0.99;
+
 
     // vector to save intermediate calculations
     private vector1 = new Vector3();
@@ -26,7 +31,7 @@ export class Particle {
         this.currentPosition.set(x, y, z);
         this.bouncing = bouncing;
         this.lifetime = lifetime;
-        this.mesh = new Mesh(GEOMETRY, MATERIAL);
+        this.mesh = new Mesh(this.geometry, this.material);
     }
 
     // setters
@@ -43,7 +48,7 @@ export class Particle {
     };
 
     public setForce(x: number, y: number, z: number): void {
-        this.velocity.set(x, y, z)
+        this.force.set(x, y, z)
     };
 
     public setBouncing(bouncing: number): void {
@@ -127,7 +132,7 @@ export class Particle {
                     // vector1 is previous to current and is just used for performance
                     this.vector1.subVectors(this.currentPosition, this.previousPosition);
                     this.previousPosition.copy(this.currentPosition);
-                    this.currentPosition.addScaledVector(this.vector1, VERLET_CONSTANT).addScaledVector(this.force, dt * dt)
+                    this.currentPosition.addScaledVector(this.vector1, this.verletConstant).addScaledVector(this.force, dt * dt)
                     this.velocity.subVectors(this.currentPosition, this.previousPosition).multiplyScalar(1 / dt);
 
                     break;
