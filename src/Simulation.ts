@@ -135,18 +135,15 @@ export class Simulation {
         }
 
         this.particles.forEach(p => {
-
-            // call solver types: EulerOrig, EulerSemi and Verlet(to be implemented)
             p.updateParticle(DT, this.params.solverMethod);
-            // p.logInfo();
             //Check Floor collisions
             for (const plane of this.planes) {
                 if (p.collisionParticlePlane(plane)) {
-                    p.correctCollisionParticlePlain(plane);
+                    p.correctCollisionParticlePlain(plane, this.params.solverMethod);
                 }
             }
             if (p.colllisionParticleSphere(this.sphere)) {
-                p.correctCollisionParticleSphere(this.sphere);
+                p.correctCollisionParticleSphere(this.sphere, this.params.solverMethod);
             }
         })
 

@@ -160,7 +160,7 @@ export class Particle {
 
     }
 
-    public correctCollisionParticlePlain(p: Plane) {
+    public correctCollisionParticlePlain(p: Plane, method: string) {
         // TODO: check the following calculation especially what p.d refers to???:
         const normalizedNormal: Vector3 = p.normal.normalize()
         // the original implementation is like this: 	float d = -glm::dot(point, normal);
@@ -169,6 +169,12 @@ export class Particle {
         this.currentPosition = this.currentPosition.sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.currentPosition.clone().dot(normalizedNormal) + p.constant))));
         // m_velocity = m_velocity - (1 + m_bouncing) * (glm::dot(m_velocity, p.normal) + p.d) * p.normal;
         this.velocity = this.velocity.clone().sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.velocity.clone().dot(normalizedNormal)))));
+
+        if(method === "verlet"){
+            // mirror previous point on collision plane to keep same velocity
+            const distance = p.distanceToPoint(this.previousPosition);
+            this.previousPosition.copy(this.previousPosition.addScaledVector(p.normal, -2 * distance))
+        }
     }
 
     public logInfo() {
@@ -180,11 +186,11 @@ export class Particle {
         return this.currentPosition.distanceTo(sphere.center) < sphere.radius;
     }
 
-    correctCollisionParticleSphere(sphere: Sphere) {
+    correctCollisionParticleSphere(sphere: Sphere, method: string) {
         const direction = this.currentPosition.clone().sub(sphere.center).normalize();
         const pointOnSphere = sphere.center.clone().addScaledVector(direction, sphere.radius);
         const plane = new Plane();
         plane.setFromNormalAndCoplanarPoint(direction, pointOnSphere);
-        this.correctCollisionParticlePlain(plane);
+        this.correctCollisionParticlePlain(plane, method);
     }
 }
