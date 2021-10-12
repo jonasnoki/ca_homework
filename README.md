@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# A Particle Based Simulation
+
+The simulation is visualized using [Three.js](https://threejs.org/).
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
