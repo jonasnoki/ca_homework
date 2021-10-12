@@ -141,16 +141,12 @@ export class Simulation {
                 p.setVelocity(5 * (Math.random() - 0.5), 10, 5 * (Math.random() - 0.5));
                 break;
             case "semi-sphere": {
-                const alpha = 360 * (Math.random() - 0.5)
-                const beta = 90 * Math.random()
-                const position = new Vector3(Math.cos(alpha) * Math.cos(beta), Math.sin(beta), Math.cos(beta) * Math.sin(alpha))
+                const position = this.getRandomSpherePosition(true);
                 p.setVelocity(10 * position.x, 10 * position.y, 10 * position.z)
             }
                 break;
             case "explosion": {
-                const alpha = 360 * (Math.random() - 0.5)
-                const beta = 180 * (Math.random() - 0.5)
-                const position = new Vector3(Math.cos(alpha) * Math.cos(beta), Math.sin(beta), Math.cos(beta) * Math.sin(alpha))
+                const position = this.getRandomSpherePosition();
                 p.setVelocity(10 * position.x, 10 * position.y, 10 * position.z)
             }
                 break;
@@ -159,6 +155,16 @@ export class Simulation {
         }
         p.addForce(new Vector3(0, -9.8, 0));
         this.scene.add(p.getMesh());
+    }
+
+    private degsToRads(deg: number) {
+        return (deg * Math.PI) / 180.0
+    };
+
+    private getRandomSpherePosition(isSemiSphere = false) {
+        const alpha = this.degsToRads(360) * (Math.random() - 0.5)
+        const beta = this.degsToRads(isSemiSphere ? 90 : 180) * (Math.random() - (isSemiSphere ? 0 : 0.5))
+        return new Vector3(Math.cos(alpha) * Math.cos(beta), Math.sin(beta), Math.cos(beta) * Math.sin(alpha))
     }
 
     removeDeadParticles() {
