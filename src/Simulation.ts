@@ -14,7 +14,7 @@ import {Particle} from "./Particle";
 const DT = 0.01;
 const SPHERE_RADIUS = 3;
 const PARTICLE_RADIUS = 0.3;
-const SPHERE_POSITION = new Vector3(0, 3, 0);
+const SPHERE_POSITION = new Vector3(0, -5, 0);
 
 export class Simulation {
     private params = {
@@ -79,8 +79,8 @@ export class Simulation {
     }
 
     createPlanes() {
-        const bottomPlane = new Plane(new Vector3(0, 1, 0), 0);
-        const topPlane = new Plane(new Vector3(0, -1, 0), 20);
+        const bottomPlane = new Plane(new Vector3(0, 1, 0), 10);
+        const topPlane = new Plane(new Vector3(0, -1, 0), 10);
         const frontPlane = new Plane(new Vector3(0, 0, -1), 10);
         const backPlane = new Plane(new Vector3(0, 0, 1), 10);
         const rightPlane = new Plane(new Vector3(1, 0, 0), 10);
@@ -90,7 +90,7 @@ export class Simulation {
         this.planeHelpers = this.planes.map((plane) => {
             const visualizedPlane = plane.clone();
             visualizedPlane.translate(visualizedPlane.normal.clone().normalize().multiplyScalar(- Particle.radius))
-            const helper = new PlaneHelper(visualizedPlane, 10, 0xffff00);
+            const helper = new PlaneHelper(visualizedPlane, 20 + (2*Particle.radius), 0xffff00);
             this.scene.add(helper);
             return helper;
         })
@@ -151,7 +151,7 @@ export class Simulation {
     }
 
     private spawnRandomParticle(method: string) {
-        const p = new Particle(0.0, 10.0, 0.0, this.params.bouncing, this.params.lifetime);
+        const p = new Particle(0.0, 0.0, 0.0, this.params.bouncing, this.params.lifetime);
         this.particles.push(p);
         switch (method) {
             case "waterfall":
