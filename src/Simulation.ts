@@ -43,15 +43,17 @@ export class Simulation {
     private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshPhongMaterial());
 
     constructor(scene: Scene, gui: any) {
-        // One particle
         this.scene = scene
-        this.sphereMesh.material.color.setHSL(.96, 1, .5)
-        this.sphereMesh.position.set(SPHERE_POSITION.x, SPHERE_POSITION.y, SPHERE_POSITION.z);
-        this.scene.add(this.sphereMesh);
+        this.createSphere();
         this.createGui(gui);
         this.createPlanes();
         this.spawnParticles()
+    }
 
+    private createSphere() {
+        this.sphereMesh.material.color.setHSL(.96, 1, .5)
+        this.sphereMesh.position.set(SPHERE_POSITION.x, SPHERE_POSITION.y, SPHERE_POSITION.z);
+        this.scene.add(this.sphereMesh);
     }
 
     private createGui(gui: any) {
