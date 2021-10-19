@@ -1,4 +1,4 @@
-import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere, Material} from "three";
+import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere, Material, Triangle} from "three";
 
 
 
@@ -149,8 +149,7 @@ export class Particle {
 
     public collisionParticlePlane(p: Plane) {
         let sign: number;
-        // TODO: check the following calculation:
-
+        
         sign = this.currentPosition.dot(p.normal) + p.constant;
         // sign = glm::dot(m_currentPosition, p.normal) + p.d;
         sign *= this.previousPosition.dot(p.normal) + p.constant;
@@ -161,7 +160,6 @@ export class Particle {
     }
 
     public correctCollisionParticlePlain(p: Plane) {
-        // TODO: check the following calculation especially what p.d refers to???:
         const normalizedNormal: Vector3 = p.normal.normalize()
         // the original implementation is like this: 	float d = -glm::dot(point, normal);
         // implementation of threejs confirms that it is the same: 		this.constant = - point.dot( this.normal );
@@ -176,15 +174,31 @@ export class Particle {
         console.log(`position = ${this.currentPosition.x} ${this.currentPosition.y} ${this.currentPosition.z} velocity = ${this.velocity.x} ${this.velocity.y} ${this.velocity.z}`)
     }
 
-    colllisionParticleSphere(sphere: Sphere) {
+    public colllisionParticleSphere(sphere: Sphere) {
         return this.currentPosition.distanceTo(sphere.center) < sphere.radius;
     }
 
-    correctCollisionParticleSphere(sphere: Sphere) {
+    public correctCollisionParticleSphere(sphere: Sphere) {
         const direction = this.currentPosition.clone().sub(sphere.center).normalize();
         const pointOnSphere = sphere.center.clone().addScaledVector(direction, sphere.radius);
         const plane = new Plane();
         plane.setFromNormalAndCoplanarPoint(direction, pointOnSphere);
         this.correctCollisionParticlePlain(plane);
+    }
+
+    public colllisionParticleTriangle(triangle: Triangle) {
+        const A_x23 = this.A(this.currentPosition.clone(), triangle.b.clone(), triangle.c.clone())
+        const A_1x3 = this.A(triangle.a.clone(), this.currentPosition.clone(), triangle.c.clone())
+        const A_12x = this.A(triangle.a.clone(), triangle.b.clone(), this.currentPosition.clone())
+        const A_123 = this.A(triangle.a.clone(), triangle.b.clone(), triangle.c.clone())
+        
+        return A_x23 + A_1x3 + A_12x - A_123 <= Particle.radius
+    }
+
+    private A(Vi: Vector3, Vj: Vector3, Vk: Vector3){
+        Vj.subVectors(Vj, Vi)
+        Vk.subVectors(Vk, Vi)
+        Vj.cross(Vk)
+        return 0.5 * Vj.length()
     }
 }

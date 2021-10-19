@@ -6,7 +6,10 @@ import {
     Sphere,
     SphereGeometry,
     Mesh,
-    MeshPhongMaterial
+    MeshPhongMaterial,
+    MeshBasicMaterial,
+    BufferGeometry,
+    Triangle
 } from "three";
 import {Particle} from "./Particle";
 
@@ -37,26 +40,42 @@ export class Simulation {
     public planes: Plane[] = [];
     public collisionCount = 0;
     public scene: Scene;
+    public trianglePlane : Plane;
 
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
     private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshPhongMaterial());
+    private triangle = new Triangle(new Vector3(0, -10, -10), new Vector3(-10, 0, -10), new Vector3(-10, -10, 0))
 
     constructor(scene: Scene, gui: any) {
-        // One particle
         this.scene = scene
         this.sphereMesh.material.color.setHSL(.96, 1, .5)
         this.sphereMesh.position.set(SPHERE_POSITION.x, SPHERE_POSITION.y, SPHERE_POSITION.z);
         this.scene.add(this.sphereMesh);
+
+        const points = []
+        points.push(new Vector3(0, -10, -10))
+        points.push(new Vector3(-10, 0, -10))
+        points.push(new Vector3(-10, -10, 0))
+       
+        points.push(new Vector3(-10, 0, -10))
+        points.push(new Vector3(0, -10, -10))
+        points.push(new Vector3(-10, -10, 0))
+
+        let geometry = new BufferGeometry().setFromPoints( points )
+        let line = new Mesh(geometry, new MeshBasicMaterial({ color: 0x888888 }))
+
+        this.trianglePlane = new Plane(new Vector3(1,1,1).normalize(), 11)
+        scene.add(line)
+
         this.createGui(gui);
         this.createPlanes();
         this.spawnParticles()
-
     }
 
     private createGui(gui: any) {
         gui.add(this.params, 'removeAllParticles').name('Remove Particles');
-        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain'])
+        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain', 'test'])
             .onChange(() => this.spawnParticles())
             .name('Spawn Method');
         gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet']).name('Solver Method');
@@ -85,13 +104,16 @@ export class Simulation {
         const backPlane = new Plane(new Vector3(0, 0, 1), 10);
         const rightPlane = new Plane(new Vector3(1, 0, 0), 10);
         const leftPlane = new Plane(new Vector3(-1, 0, 0), 10);
-        this.planes.push(bottomPlane, topPlane, frontPlane, backPlane, rightPlane, leftPlane)
+
+        this.planes.push(bottomPlane, topPlane, frontPlane, backPlane, rightPlane, leftPlane, this.trianglePlane)
 
         this.planeHelpers = this.planes.map((plane) => {
             const visualizedPlane = plane.clone();
             visualizedPlane.translate(visualizedPlane.normal.clone().normalize().multiplyScalar(- Particle.radius))
             const helper = new PlaneHelper(visualizedPlane, 20 + (2*Particle.radius), 0xffff00);
-            this.scene.add(helper);
+            if(plane != this.trianglePlane){
+                this.scene.add(helper);
+            }
             return helper;
         })
     }
@@ -122,7 +144,7 @@ export class Simulation {
     }
 
     isMethodAtBeginning() {
-        return this.params.spawnMethod === "semi-sphere" || this.params.spawnMethod === "explosion"
+        return this.params.spawnMethod === "semi-sphere" || this.params.spawnMethod === "explosion" || this.params.spawnMethod === "test"
     }
 
     update(t: number) {
@@ -134,18 +156,27 @@ export class Simulation {
 
         this.particles.forEach(p => {
 
-            // call solver types: EulerOrig, EulerSemi and Verlet(to be implemented)
+            // call solver types: EulerOrig, EulerSemi and Verlet
             p.updateParticle(DT, this.params.solverMethod);
+            
             // p.logInfo();
-            //Check Floor collisions
+            
+            //Check triangle collisions
+            if (p.colllisionParticleTriangle(this.triangle)) {
+                p.correctCollisionParticlePlain(this.trianglePlane);
+            }
+
+            //Check floor collisions
             for (const plane of this.planes) {
                 if (p.collisionParticlePlane(plane)) {
                     p.correctCollisionParticlePlain(plane);
                 }
             }
+            //Check Sphere collisions
             if (p.colllisionParticleSphere(this.sphere)) {
                 p.correctCollisionParticleSphere(this.sphere);
             }
+            
         })
 
     }
@@ -168,6 +199,10 @@ export class Simulation {
             case "explosion": {
                 const position = this.getRandomSpherePosition();
                 p.setVelocity(10 * position.x, 10 * position.y, 10 * position.z)
+            }
+                break;
+            case "test": {
+                
             }
                 break;
             default:
