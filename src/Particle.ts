@@ -1,8 +1,5 @@
 import {Vector3, Plane, Mesh, SphereGeometry, MeshNormalMaterial, Sphere, Material} from "three";
 
-
-
-
 export class Particle {
     private currentPosition: Vector3 = new Vector3();
     private previousPosition: Vector3 = new Vector3();
@@ -170,11 +167,7 @@ export class Particle {
         // m_velocity = m_velocity - (1 + m_bouncing) * (glm::dot(m_velocity, p.normal) + p.d) * p.normal;
         this.velocity = this.velocity.clone().sub(normalizedNormal.clone().multiplyScalar(((1 + this.bouncing) * (this.velocity.clone().dot(normalizedNormal)))));
 
-        if(method === "verlet"){
-            // mirror previous point on collision plane to keep same velocity
-            const distance = p.distanceToPoint(this.previousPosition);
-            this.previousPosition.copy(this.previousPosition.addScaledVector(p.normal, -2 * distance))
-        }
+
     }
 
     public logInfo() {

@@ -9,6 +9,7 @@ import {
     MeshPhongMaterial
 } from "three";
 import {Particle} from "./Particle";
+import {Rope} from "./Rope";
 
 
 const DT = 0.01;
@@ -58,10 +59,11 @@ export class Simulation {
 
     private createGui(gui: any) {
         gui.add(this.params, 'removeAllParticles').name('Remove Particles');
-        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain'])
+        gui.add(this.params, 'spawnMethod', ['waterfall', 'explosion', 'semi-sphere', 'fountain', 'rope'])
             .onChange(() => this.spawnParticles())
             .name('Spawn Method');
-        gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet']).name('Solver Method');
+        gui.add(this.params, 'solverMethod', ['euler-semi', 'euler-orig', 'verlet'])
+            .name('Solver Method');
         gui.add(this.params, 'bouncing', 0, 1)
             .name('Bouncing')
             .onChange((b: number) => this.particles.forEach(p => p.setBouncing(b)));
@@ -109,11 +111,25 @@ export class Simulation {
     }
 
     spawnParticles() {
+
+        if(this.params.spawnMethod === "rope"){
+            this.spawnRope()
+            return
+        }
         if (this.isMethodAtBeginning()) {
             for (let i = 0; i < 500; i++) {
                 this.spawnRandomParticle(this.params.spawnMethod);
             }
         }
+    }
+
+    spawnRope(){
+        const rope = new Rope(this.params.lifetime, this.params.bouncing)
+        const particles = rope.getParticles();
+        particles.forEach(p => {
+            this.scene.add(p.getMesh());
+            this.particles.push(p)
+        })
     }
 
     removeAllParticles() {
@@ -124,7 +140,7 @@ export class Simulation {
     }
 
     isMethodAtBeginning() {
-        return this.params.spawnMethod === "semi-sphere" || this.params.spawnMethod === "explosion"
+        return this.params.spawnMethod === "semi-sphere" || this.params.spawnMethod === "explosion" || this.params.spawnMethod === "rope"
     }
 
     update(t: number) {
@@ -135,6 +151,7 @@ export class Simulation {
         }
 
         this.particles.forEach(p => {
+            p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z);
             p.updateParticle(DT, this.params.solverMethod);
             //Check Floor collisions
             for (const plane of this.planes) {
@@ -170,7 +187,6 @@ export class Simulation {
             }
                 break;
         }
-        p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z);
         this.scene.add(p.getMesh());
     }
 
