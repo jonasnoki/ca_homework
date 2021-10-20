@@ -14,21 +14,23 @@ export class Particle {
     public static radius = 0.3;
 
     private mesh: Mesh;
-    private geometry = new SphereGeometry(Particle.radius);
-    private material = new MeshNormalMaterial();
+    private static geometry = new SphereGeometry(Particle.radius);
+    private static material = new MeshNormalMaterial();
 
     private verletConstant = 0.99;
 
 
     // vector to save intermediate calculations
     private vector1 = new Vector3();
+    private mass: number;
 
 
-    constructor(x: number, y: number, z: number, bouncing: number, lifetime: number) {
+    constructor(x: number, y: number, z: number, bouncing: number, lifetime: number, mass: number) {
         this.currentPosition.set(x, y, z);
         this.bouncing = bouncing;
         this.lifetime = lifetime;
-        this.mesh = new Mesh(this.geometry, this.material);
+        this.mass = mass;
+        this.mesh = new Mesh(Particle.geometry, Particle.material);
     }
 
     // setters
@@ -54,6 +56,10 @@ export class Particle {
 
     public setLifetime(lifetime: number): void {
         this.lifetime = lifetime;
+    };
+
+    public setMass(mass: number): void {
+        this.mass = mass;
     };
 
     public setFixed(fixed: boolean): void {
@@ -106,24 +112,24 @@ export class Particle {
     }
 
     public updateParticle(dt: number, method: string) {
+        this.lifetime -= dt;
         if (!this.fixed) {
-            this.lifetime -= dt;
             switch (method) {
                 case "euler-semi":
                     this.previousPosition.copy(this.currentPosition);
-                    this.velocity = this.velocity.addScaledVector(this.force, dt);
+                    this.velocity = this.velocity.addScaledVector(this.force, dt / this.mass);
                     this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
 
                     break;
                 case "euler-orig":
                     this.previousPosition.copy(this.currentPosition);
-                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt);
+                    this.currentPosition = this.currentPosition.addScaledVector(this.velocity, dt / this.mass);
                     this.velocity = this.velocity.addScaledVector(this.force, dt);
 
                     break;
                 case "verlet":
                     if (this.firstRound) {
-                        this.previousPosition.subVectors(this.currentPosition, this.velocity.multiplyScalar(dt))
+                        this.previousPosition.subVectors(this.currentPosition, this.velocity.multiplyScalar(dt / this.mass))
                         break;
                     }
                     // vector1 is previous to current and is just used for performance
@@ -137,8 +143,8 @@ export class Particle {
                     break;
             }
 
-            this.mesh.position.copy(this.currentPosition);
         }
+        this.mesh.position.copy(this.currentPosition);
 
         this.firstRound = false;
         return;

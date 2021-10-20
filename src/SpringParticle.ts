@@ -12,4 +12,10 @@ export class SpringParticle extends Particle {
         this.springs.forEach(spring => this.addForce(spring.calcForce(this)));
         super.updateParticle(dt, method);
     }
+
+    public delete() {
+        this.springs.forEach(s => s.delete())
+        this.springs = [];
+        super.delete();
+    }
 }
