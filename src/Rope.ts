@@ -8,9 +8,11 @@ export class Rope {
     private springs: Spring[] = [];
     private fixedParticle: SpringParticle;
 
-    constructor(lifetime: number, bouncing: number, elasticity: number, damping: number, mass: number, fixed: boolean, showSpring: boolean, startPosition: Vector3, numberOfParticles = 10) {
-        const direction = new Vector3( Math.random() - 0.5, 0, Math.random() - 0.5);
+    constructor(lifetime: number, bouncing: number, elasticity: number, damping: number, fixed: boolean, showSpring: boolean, startPosition: Vector3, numberOfParticles = 50) {
+        const mass = 1 / numberOfParticles;
+        const direction = new Vector3( (Math.random() / numberOfParticles * 10) - (0.5 / numberOfParticles * 10), 0, (Math.random()  / numberOfParticles * 10) - (0.5  / numberOfParticles  * 10));
         let prev = new SpringParticle(startPosition.x, startPosition.y, startPosition.z, bouncing, lifetime, mass);
+        prev.setMass(mass)
         this.fixedParticle = prev;
         this.fixed = fixed;
         if(fixed){
@@ -25,6 +27,7 @@ export class Rope {
             prev.addSpring(spring);
             curr.addSpring(spring);
             this.particles.push(curr);
+            curr.setMass(mass);
             prev = curr;
         }
     }

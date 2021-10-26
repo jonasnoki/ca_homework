@@ -4,6 +4,7 @@ import {Simulation} from "./Simulation";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 // @ts-ignore
 import {GUI} from "three/examples/jsm/libs/dat.gui.module";
+import {Vector3} from "three";
 
 
 function Scene() {
@@ -18,7 +19,8 @@ function Scene() {
     function init() {
         const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100);
 
-        camera.position.set(0, 5, 40);
+        camera.position.set(0, 3, 20);
+        camera.lookAt(0,-3,0);
 
         const scene = new THREE.Scene();
 
@@ -37,6 +39,7 @@ function Scene() {
         const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvasRef.current as HTMLCanvasElement});
         renderer.setSize(window.innerWidth, window.innerHeight);
         const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target = new Vector3(0,-3,0);
 
         controls.update();
 

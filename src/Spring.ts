@@ -41,6 +41,8 @@ export class Spring {
     }
 
     public setShowSpring(s: boolean){
+        this.particleA.getMesh().visible = !s
+        this.particleB.getMesh().visible = !s
         this.showSpring = s;
         this.mesh.visible = s;
     }

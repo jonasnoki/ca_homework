@@ -13,7 +13,6 @@ import {Rope} from "./Rope";
 
 
 const SPHERE_RADIUS = 3;
-const PARTICLE_RADIUS = 0.3;
 const SPHERE_POSITION = new Vector3(0, -5, 0);
 
 export class Simulation {
@@ -25,16 +24,17 @@ export class Simulation {
             this.spawnParticles()
         },
         spawnMethod: "rope",
-        arePlanesVisible: true,
+        arePlanesVisible: false,
         ropeFixed: true,
-        showSpring: true,
+        showSpring: false,
         solverMethod: "verlet",
         bouncing: 0.8,
-        lifetime: 20,
+        lifetime: 80,
         elasticity: 100,
         damping: 5,
-        mass: 0.010000001,
+        // mass: 0.010000001,
         dt: 0.012,
+        particlesPerRope: 10,
         gravity: {
             x: 0,
             y: -9.81,
@@ -54,7 +54,7 @@ export class Simulation {
 
     private planeHelpers: PlaneHelper[] = [];
     private sphere = new Sphere(SPHERE_POSITION, SPHERE_RADIUS);
-    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - PARTICLE_RADIUS), new MeshPhongMaterial());
+    private sphereMesh = new Mesh(new SphereGeometry(SPHERE_RADIUS - Particle.radius), new MeshPhongMaterial());
     private ropes: Rope[] = [];
 
     constructor(scene: Scene, gui: any) {
@@ -87,9 +87,11 @@ export class Simulation {
             .onChange((b: number) => this.particles.forEach(p => p.setLifetime(b)));
         gui.add(this.params, 'dt', 0, 0.1)
             .name('dt');
-        gui.add(this.params, 'mass', 0, 2)
-            .name('Mass')
-            .onChange((m: number) => this.setMass(m));
+        gui.add(this.params, 'particlesPerRope', 5, 200)
+            .name('Particles Per Rope');
+        // gui.add(this.params, 'mass', 0, 2)
+        //     .name('Mass')
+        //     .onChange((m: number) => this.setMass(m));
         gui.add(this.params, 'ropeFixed')
             .name('Fix Rope')
             .onChange(() => this.ropes.forEach(rope  => rope.setFixed(this.params.ropeFixed)));
@@ -119,10 +121,10 @@ export class Simulation {
             .onChange(() => this.applyGravityToAllParticles());
     }
 
-    private setMass(m: number) {
-        this.params.mass = m;
-        this.particles.forEach(p => p.setMass(m));
-    }
+    // private setMass(m: number) {
+    //     this.params.mass = m;
+    //     this.particles.forEach(p => p.setMass(m));
+    // }
 
     createPlanes() {
         const bottomPlane = new Plane(new Vector3(0, 1, 0), 10);
@@ -137,13 +139,14 @@ export class Simulation {
             const visualizedPlane = plane.clone();
             visualizedPlane.translate(visualizedPlane.normal.clone().normalize().multiplyScalar(- Particle.radius))
             const helper = new PlaneHelper(visualizedPlane, 20 + (2*Particle.radius), 0xffff00);
+            helper.visible = this.params.arePlanesVisible;
             this.scene.add(helper);
             return helper;
         })
     }
 
     togglePlaneHelperVisibility() {
-        this.planeHelpers.forEach(p => p.visible = !p.visible)
+        this.planeHelpers.forEach(p => p.visible = this.params.arePlanesVisible)
     }
 
     applyGravityToAllParticles() {
@@ -168,7 +171,8 @@ export class Simulation {
     }
 
     spawnRope(){
-        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.mass, this.params.ropeFixed, this.params.showSpring, new Vector3((this.params.fixedPoint.x, this.params.fixedPoint.y, this.params.fixedPoint.z)));
+        const fixedPoint = new Vector3(this.params.fixedPoint.x, this.params.fixedPoint.y, this.params.fixedPoint.z);
+        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.ropeFixed, this.params.showSpring, fixedPoint, this.params.particlesPerRope);
         const particles = rope.getParticles();
         particles.forEach(p => {
             this.scene.add(p.getMesh());
@@ -220,7 +224,7 @@ export class Simulation {
     }
 
     private spawnRandomParticle(method: string) {
-        const p = new Particle(0.0, 0.0, 0.0, this.params.bouncing, this.params.lifetime, this.params.mass);
+        const p = new Particle(0.0, 0.0, 0.0, this.params.bouncing, this.params.lifetime, 1);
         this.particles.push(p);
         switch (method) {
             case "waterfall":
