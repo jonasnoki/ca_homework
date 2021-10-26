@@ -19,7 +19,7 @@ export class Spring {
 
     private geometry = new BufferGeometry();
     private static material = new LineBasicMaterial({
-        color: 0x0000ff
+        color: 0xfaf0be
     });
 
     constructor(particleA: SpringParticle, particleB: SpringParticle, elasticity: number, damping: number, showSpring: boolean) {

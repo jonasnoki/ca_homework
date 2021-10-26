@@ -18,6 +18,7 @@ export class Rope {
         if(fixed){
             prev.setFixed(true);
         }
+        prev.getMesh().visible = !showSpring
         this.particles.push(prev);
         for (let i = 1; i <= numberOfParticles; i++) {
             const pos = startPosition.clone().addScaledVector(direction, i);
@@ -28,6 +29,8 @@ export class Rope {
             curr.addSpring(spring);
             this.particles.push(curr);
             curr.setMass(mass);
+
+            curr.getMesh().visible = !showSpring
             prev = curr;
         }
     }
