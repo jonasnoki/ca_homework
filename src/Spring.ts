@@ -15,17 +15,19 @@ export class Spring {
     private damping: number;
     private restingDist: number;
     private mesh: Line;
+    private showSpring: boolean;
 
     private geometry = new BufferGeometry();
     private static material = new LineBasicMaterial({
         color: 0x0000ff
     });
 
-    constructor(particleA: SpringParticle, particleB: SpringParticle, elasticity: number, damping: number ) {
+    constructor(particleA: SpringParticle, particleB: SpringParticle, elasticity: number, damping: number, showSpring: boolean) {
         this.particleA = particleA;
         this.particleB = particleB;
         this.elasticity = elasticity;
         this.damping = damping;
+        this.showSpring = showSpring;
         this.restingDist = this.particleA.getCurrentPosition().clone().sub(this.particleA.getCurrentPosition()).length()
         this.mesh = new Line( this.geometry, Spring.material );
     }
@@ -38,11 +40,18 @@ export class Spring {
         this.damping = d;
     }
 
+    public setShowSpring(s: boolean){
+        this.showSpring = s;
+        this.mesh.visible = s;
+    }
+
     public calcForce(particle: SpringParticle): Vector3 {
         const pA =  this.particleA.getCurrentPosition().clone();
         const pB = this.particleB.getCurrentPosition().clone();
 
-        this.geometry.setFromPoints([pA, pB]);
+        if(this.showSpring){
+            this.geometry.setFromPoints([pA, pB]);
+        }
         const pbpa = pB.sub(pA);
         const dist = pbpa.length()
         pbpa.normalize();

@@ -28,12 +28,13 @@ export class Simulation {
         spawnMethod: "rope",
         arePlanesVisible: true,
         ropeFixed: true,
-        solverMethod: "euler-semi",
+        showSpring: true,
+        solverMethod: "verlet",
         bouncing: 0.8,
         lifetime: 20,
-        elasticity: 10,
-        damping: 1,
-        mass: 0.10000001,
+        elasticity: 100,
+        damping: 5,
+        mass: 0.010000001,
         gravity: {
             x: 0,
             y: -9.81,
@@ -92,6 +93,8 @@ export class Simulation {
             .onChange((e: number) => this.ropes.forEach(r => r.setElasticity(e)));
         springsFolder.add(this.params, 'damping', 0, 500)
             .onChange((d: number) => this.ropes.forEach(r => r.setDamping(d)));
+        springsFolder.add(this.params, 'showSpring')
+            .onChange((s: boolean) => this.ropes.forEach(r => r.setShowSpring(s)))
         const gravityFolder: any = gui.addFolder('Gravity');
         gravityFolder.add(this.params.gravity, 'x', -20, 20)
             .onChange(() => this.applyGravityToAllParticles());
@@ -150,7 +153,7 @@ export class Simulation {
     }
 
     spawnRope(){
-        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.mass, this.params.ropeFixed);
+        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.mass, this.params.ropeFixed, this.params.showSpring);
         const particles = rope.getParticles();
         particles.forEach(p => {
             this.scene.add(p.getMesh());
