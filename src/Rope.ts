@@ -3,12 +3,16 @@ import {SpringParticle} from "./SpringParticle";
 import {Spring} from "./Spring";
 
 export class Rope {
+    private fixed: boolean;
     private particles: SpringParticle[] = [];
     private springs: Spring[] = [];
+    private fixedParticle: SpringParticle;
 
-    constructor(lifetime: number, bouncing: number, elasticity: number, damping: number, mass: number, fixed: boolean, showSpring: boolean, startPosition = new Vector3(0, 3, 0), numberOfParticles = 10) {
+    constructor(lifetime: number, bouncing: number, elasticity: number, damping: number, mass: number, fixed: boolean, showSpring: boolean, startPosition: Vector3, numberOfParticles = 10) {
         const direction = new Vector3( Math.random() - 0.5, 0, Math.random() - 0.5);
         let prev = new SpringParticle(startPosition.x, startPosition.y, startPosition.z, bouncing, lifetime, mass);
+        this.fixedParticle = prev;
+        this.fixed = fixed;
         if(fixed){
             prev.setFixed(true);
         }
@@ -43,5 +47,16 @@ export class Rope {
 
     setShowSpring(showSpring: boolean): void {
         this.springs.forEach(s => s.setShowSpring(showSpring))
+    }
+
+    setFixed(fixed: boolean): void {
+        if(!fixed) this.fixedParticle.setFixed(false);
+        this.fixed = fixed;
+    }
+
+    update(fixedPoint: { x: number; y: number; z: number }) {
+        if(this.fixed){
+            this.fixedParticle.setPosition(fixedPoint.x, fixedPoint.y, fixedPoint.z);
+        }
     }
 }

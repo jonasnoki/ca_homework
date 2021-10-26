@@ -12,7 +12,6 @@ import {Particle} from "./Particle";
 import {Rope} from "./Rope";
 
 
-const DT = 0.01;
 const SPHERE_RADIUS = 3;
 const PARTICLE_RADIUS = 0.3;
 const SPHERE_POSITION = new Vector3(0, -5, 0);
@@ -35,10 +34,16 @@ export class Simulation {
         elasticity: 100,
         damping: 5,
         mass: 0.010000001,
+        dt: 0.012,
         gravity: {
             x: 0,
             y: -9.81,
             z: 0,
+        },
+        fixedPoint: {
+            x: 0.0000001,
+            y: -2.0000001,
+            z: 0.0000001,
         }
     };
 
@@ -80,11 +85,14 @@ export class Simulation {
         gui.add(this.params, 'lifetime', 0, 100)
             .name('Lifetime')
             .onChange((b: number) => this.particles.forEach(p => p.setLifetime(b)));
+        gui.add(this.params, 'dt', 0, 0.1)
+            .name('dt');
         gui.add(this.params, 'mass', 0, 2)
             .name('Mass')
             .onChange((m: number) => this.setMass(m));
         gui.add(this.params, 'ropeFixed')
-            .name('Fix Rope');
+            .name('Fix Rope')
+            .onChange(() => this.ropes.forEach(rope  => rope.setFixed(this.params.ropeFixed)));
         gui.add(this.params, 'arePlanesVisible')
             .name('Show Planes')
             .onChange(() => this.togglePlaneHelperVisibility());
@@ -101,6 +109,13 @@ export class Simulation {
         gravityFolder.add(this.params.gravity, 'y', -20, 20)
             .onChange(() => this.applyGravityToAllParticles());
         gravityFolder.add(this.params.gravity, 'z', -20, 20)
+            .onChange(() => this.applyGravityToAllParticles());
+        const fixedPointFolder: any = gui.addFolder('Fixed Point');
+        fixedPointFolder.add(this.params.fixedPoint, 'x', -5, 5)
+            .onChange(() => this.applyGravityToAllParticles());
+        fixedPointFolder.add(this.params.fixedPoint, 'y', -5, 5)
+            .onChange(() => this.applyGravityToAllParticles());
+        fixedPointFolder.add(this.params.fixedPoint, 'z', -5, 5)
             .onChange(() => this.applyGravityToAllParticles());
     }
 
@@ -153,7 +168,7 @@ export class Simulation {
     }
 
     spawnRope(){
-        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.mass, this.params.ropeFixed, this.params.showSpring);
+        const rope = new Rope(this.params.lifetime, this.params.bouncing, this.params.elasticity, this.params.damping, this.params.mass, this.params.ropeFixed, this.params.showSpring, new Vector3((this.params.fixedPoint.x, this.params.fixedPoint.y, this.params.fixedPoint.z)));
         const particles = rope.getParticles();
         particles.forEach(p => {
             this.scene.add(p.getMesh());
@@ -184,9 +199,13 @@ export class Simulation {
             this.spawnRandomParticle(this.params.spawnMethod);
         }
 
+        this.ropes.forEach(rope => {
+            rope.update(this.params.fixedPoint);
+        })
+
         this.particles.forEach(p => {
             p.setForce(this.params.gravity.x, this.params.gravity.y, this.params.gravity.z);
-            p.updateParticle(DT, this.params.solverMethod);
+            p.updateParticle(this.params.dt, this.params.solverMethod);
             //Check Floor collisions
             for (const plane of this.planes) {
                 if (p.collisionParticlePlane(plane)) {

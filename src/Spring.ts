@@ -28,7 +28,7 @@ export class Spring {
         this.elasticity = elasticity;
         this.damping = damping;
         this.showSpring = showSpring;
-        this.restingDist = this.particleA.getCurrentPosition().clone().sub(this.particleA.getCurrentPosition()).length()
+        this.restingDist = this.particleA.getCurrentPosition().clone().sub(this.particleB.getCurrentPosition()).length()
         this.mesh = new Line( this.geometry, Spring.material );
     }
 
